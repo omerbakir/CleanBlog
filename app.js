@@ -2,7 +2,10 @@ const express = require("express")
 const mongoose = require("mongoose")
 const path = require("path")
 const ejs = require("ejs")
+const methodOverride = require('method-override')
 const Post = require("./models/Post")
+const pageControllers = require("./controllers/pageControllers")
+const postControllers = require("./controllers/postControllers")
 
 const app = express()
 const port = 3000
@@ -16,32 +19,16 @@ app.use(express.urlencoded({
     extended: true
 }))
 app.use(express.json())
+app.use(methodOverride('_method', {
+    methods: ["POST", "GET"]
+}))
 
-app.get("/", async (req, res) => {
-    const posts = await Post.find({})
-    res.render("index", {
-        posts
-    })
-})
-app.get("/posts/:id", async (req, res) => {
-    const post = await Post.findById(req.params.id)
-    res.render("post", {
-        post
-    })
-})
-app.get("/about", (req, res) => {
-    res.render("about")
-})
-app.get("/add_post", (req, res) => {
-    res.render("add_post")
-})
-app.get("/post", (req, res) => {
-    res.render("post")
-})
-
-app.post("/posts", async (req, res) => {
-    await Post.create(req.body)
-    res.redirect("/")
-})
-
+app.get("/", postControllers.getAllPosts)
+app.get("/about", pageControllers.aboutPage)
+app.get("/add_post", pageControllers.addPage)
+app.get("/posts/edit/:id", pageControllers.editPage)
+app.get("/posts/:id", postControllers.getPost)
+app.post("/posts", postControllers.createPost)
+app.put("/posts/:id", postControllers.updatePost)
+app.delete('/posts/:id', postControllers.deletePost);
 app.listen(port)
